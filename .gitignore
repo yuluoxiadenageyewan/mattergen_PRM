@@ -110,3 +110,6 @@ Local
 
 # VS Code
 .vscode/
+mattergen/checkpoints/
+mattergen/data-release/
+mattergen/datasets/
