@@ -6,7 +6,7 @@ from typing import Tuple, List
 from pymatgen.core.structure import Structure
 from pymatgen.io.cif import CifWriter
 
-sys.path.insert(0, os.path.abspath('D:/ionic_surro'))
+sys.path.insert(0, os.path.abspath(os.environ.get('IONIC_SURRO_PATH', '../ionic_surro')))
 from scorer import score_structures
 
 from rewards.calculators.base import Calculator
