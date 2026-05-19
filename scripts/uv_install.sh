@@ -11,7 +11,11 @@ git checkout 5bb2b397a36de85a8dc9583b7d1d6353989de72c
 uv pip install -e .
 cd ..
 
-# ionic_surro dependencies (torch stack already installed above)
-# adjust IONIC_SURRO_PATH to where ionic_surro is located on this machine
+# ionic_surro dependencies
 IONIC_SURRO_PATH=${IONIC_SURRO_PATH:-"../ionic_surro"}
-uv pip install -r "${IONIC_SURRO_PATH}/requirements.txt" --index-strategy unsafe-best-match
+if [ -f "${IONIC_SURRO_PATH}/requirements.txt" ]; then
+    uv pip install -r "${IONIC_SURRO_PATH}/requirements.txt" --index-strategy unsafe-best-match
+    echo "ionic_surro dependencies installed from ${IONIC_SURRO_PATH}"
+else
+    echo "WARNING: ionic_surro not found at ${IONIC_SURRO_PATH}, skipping. Set IONIC_SURRO_PATH to fix."
+fi
