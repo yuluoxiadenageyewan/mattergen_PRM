@@ -1,84 +1,65 @@
-# MatInvent: Accelerating inverse materials design using generative diffusion models with reinforcement learning
+# matprm: MatterGen-based Solid Electrolyte RL/DPO
 
-[![arXiv](https://img.shields.io/badge/arXiv-2511.03112-b31b1b.svg)](https://arxiv.org/abs/2511.03112)
-<!-- [![DOI](https://img.shields.io/badge/DOI-10.1038/s41467--025--58499--7-blue.svg)](https://www.nature.com/articles/s41467-025-58499-7) -->
+Reinforcement learning and DPO fine-tuning of MatterGen diffusion models for solid electrolyte material discovery.
 
-MatInvent is a general and efficient reinforcement learning workflow that optimizes diffusion models for goal-directed crystal generation. MatInvent enables robust optimization for inverse material design tasks with single or multiple target properties. Compatible with diverse diffusion model architectures and property constraints, MatInvent could offer broad applicability in materials discovery.
+## Environment Setup
 
+**Requirements:** Linux, NVIDIA GPU (CUDA >= 11.8), Python 3.10
 
-## 🚀 Environment Setup
-System requirements: This package requires a standard Linux computer with GPU (supports CUDA >= 11) and enough RAM (> 2 GB). If you want to run the code on a GPU that does not support CUDA>=11, you need to modify the versions of PyTorch and CUDA in the [env.yml](env.yml) file. Two methods for environment setup are provided, and you can choose one according to your preference. Typically, method 1 (~2 min) is much faster than method 2 (>10 min).
+### Method 1: uv (recommended, ~2 min)
 
----
-
-**Method 1 (uv)**
-
-A quick way to setup the environment is by [uv](https://docs.astral.sh/uv/), a fast Python package and project manager.
-1. Run the script [uv_install.sh](scripts/uv_install.sh) to create a uv environment and install the dependencies into `.venv` folder:
-   ```bash
-   bash scripts/uv_install.sh
-   ```
-2. Activate the uv environment with `source .venv/bin/activate`.
-
----
-
-**Method 2 (conda/mamba)**
-
-1. Use `conda` to install dependencies and set up the environment for a Nvidia GPU machine.
-We recommend using the [Miniconda installer](https://www.anaconda.com/docs/getting-started/miniconda/install). You can also install [`mamba`](https://mamba.readthedocs.io/en/latest/) to the conda base environment by the command `conda install mamba -n base -c conda-forge`. `mamba` is a faster, drop-in replacement for `conda`.
-1. Then create a conda environment and install the dependencies:
-    ```bash
-    conda env create -f env.yml
-    # OR use mamba to create new env faster
-    # mamba env create -f env.yml
-    ```
-    Activate the conda environment with `conda activate matinvent`.
-
----
-
-**Additional Configuration**
-
-- We use[ Weights & Biases (wandb)](https://wandb.ai/) by default to record RL results, which can visualize RL curves online in real time. If you would like to use `wandb`, please [login](https://wandb.ai/quickstart?product=models) to your account before running the RL experiment. If you do not want to use `wandb`, please change the `logger` parameter in the [run script](scripts/run_rl.sh) to `logger=csv`.
-- If you want to calculate specific heat capacities for RL rewards using [FairChem](https://github.com/facebookresearch/fairchem) software and pre-trained ML potentials [eSEN-30M-OAM](https://huggingface.co/facebook/OMAT24), please follow this [tutorial](rewards/calculators/fairchem/README.md) to install the additional conda environment.
-
-
-## 🤖 Checkpoints
-Checkpoint files for the pretrained diffusion models and property prediction model are available at [Hugging Face](https://huggingface.co/jwchen25/MatInvent).
-
-
-## 🏆 RL rewards and property evaluation
-The material properties and rewards can be obtained through theoretical simulations, ML predictions, and empirical calculations. Any cost-acceptable property estimator can be used to calculate RL rewards without requiring gradients. This codebase provides over 15 property evaluators and corresponding RL rewards, encompassing electronic, magnetic, mechanical, thermal, dielectric, and physicochemical properties, as well as synthesizability and supply chain risk. Since DFT computation is expensive and time-consuming, we provide additional ML prediction models for rapid testing. All configuration files related to RL rewards can be found in [`configs/reward`](configs/reward).
-
-## 🔥 RL experiments
-You can use the following commands or [run_rl.sh](scripts/run_rl.sh) script to run RL experiments for single or multiple property optimization tasks.
 ```bash
-# option 1
-python -u main.py \
-    expname=test \
-    pipeline=mat_invent \
-    model=mattergen \
-    reward=hhi \
-    logger=wandb
+bash scripts/uv_install.sh
+source .venv/bin/activate
 ```
+
+Creates a `.venv` (Python 3.10) and installs from `requirements.txt` + MatterGen from source.
+
+> `ionic_surro` path defaults to `../ionic_surro`. Set `IONIC_SURRO_PATH` to override.
+
+### Method 2: conda/mamba (>10 min)
+
 ```bash
-# option 2
+conda env create -f env.yml
+conda activate matinvent
+```
+
+### FairChem (optional)
+
+For specific heat capacity rewards using [FairChem](https://github.com/facebookresearch/fairchem) + eSEN-30M-OAM, set up a separate conda environment:
+
+```bash
+conda env create -f fairchem.env.yml
+```
+
+See [rewards/calculators/fairchem/README.md](rewards/calculators/fairchem/README.md) for details.
+
+## Running RL
+
+```bash
+python -u main.py expname=test pipeline=mat_invent model=mattergen reward=hhi logger=wandb
+# or
 bash scripts/run_rl.sh
 ```
-You need to modify the relevant parameters for your own task. The parameter `expname` defines the name of this RL experiment. `model` defines which [diffusion model](configs/model) is used in RL. `reward` defines the [target property](configs/reward) for the RL reward. We use the [hydra](https://github.com/facebookresearch/hydra) package to manage the configuration of input parameters.
 
-[gen_eval.sh](scripts/gen_eval.sh) script is used to generate a large number of crystal structures using unconditional or RL-finetuned [MatterGen](https://github.com/microsoft/mattergen) models and to evaluate the generation quality (such as SUN ratio).
+Key parameters (managed via [hydra](https://github.com/facebookresearch/hydra)):
+- `expname`: experiment name
+- `model`: diffusion model config ([configs/model](configs/model))
+- `reward`: target property ([configs/reward](configs/reward))
+- `logger`: `wandb` or `csv`
+
+Model checkpoints are saved every `save_freq` steps (default 50) and on manual early stop (Ctrl+C).
+
+## Generation & Evaluation
+
 ```bash
 bash scripts/gen_eval.sh
 ```
-Please modify the environment variables in [scripts/gen_eval.sh](scripts/gen_eval.sh) before running it.
 
+Edit environment variables in the script before running.
 
-## 🌈 Acknowledgements
-This work was supported as part of NCCR Catalysis (grant number 225147), a National Centre of Competence in Research funded by the Swiss National Science Foundation.
+## Citation
 
-
-## 📝 Citation
-If you find our work useful, please consider citing it:
 ```bibtex
 @article{matinvent,
   title={Accelerating inverse materials design using generative diffusion models with reinforcement learning},

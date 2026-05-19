@@ -370,15 +370,30 @@ class MatInvent(ReinL):
     def run_rl(self):
         logging.info('*****   RL START   *****')
         start_time = time.time()
+        last_ckpt_dir = None
 
-        for step in range(self.rl_epoch):
-            self.step = step
-            self.rl_step()
-            # Save the agent weights every few iterations
-            if (step + 1) % self.save_freq == 0:
-                ckpt_dir = os.path.join(self.models_dir, f'loop_{step:0>4d}')
-                self.model_suite.save_model(self.agent, ckpt_dir)
-        # If the entire training finishes, clean up
+        try:
+            for step in range(self.rl_epoch):
+                self.step = step
+                self.rl_step()
+                if (step + 1) % 20 == 0:
+                    ckpt_dir = os.path.join(self.models_dir, f'loop_{step:0>4d}')
+                    self.model_suite.save_model(self.agent, ckpt_dir)
+                    last_ckpt_dir = ckpt_dir
+                    logging.info(f'Checkpoint saved: {ckpt_dir}')
+                # legacy save_freq (keep for backward compat if save_freq != 20)
+                elif (step + 1) % self.save_freq == 0:
+                    ckpt_dir = os.path.join(self.models_dir, f'loop_{step:0>4d}')
+                    self.model_suite.save_model(self.agent, ckpt_dir)
+                    last_ckpt_dir = ckpt_dir
+        except KeyboardInterrupt:
+            logging.info('Early stop triggered.')
+            if last_ckpt_dir is not None:
+                logging.info(f'Last checkpoint: {last_ckpt_dir}')
+            else:
+                logging.info('No checkpoint saved yet; nothing to restore.')
+            return
+
         ckpt_dir = os.path.join(self.models_dir, 'final')
         self.model_suite.save_model(self.agent, ckpt_dir)
 
