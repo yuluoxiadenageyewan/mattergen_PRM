@@ -1,0 +1,45 @@
+_target_: pipeline.mat_invent.MatInvent
+
+# global
+rl_epoch: ${rl_epoch}
+device: ${device}
+
+# saving
+save_dir: ./
+save_freq: 100  # for agent model
+
+# sampling
+sample_cfg: ${sample_cfg}
+
+topk_ratio: 0.5
+
+# experience replay (prioritized)
+replay: True
+replay_args:
+  buffer_size: 100
+  sample_size: 10
+  reward_cutoff: 0.1
+  priority_beta: 0.6  # IS correction exponent for prioritized replay
+
+# diversity filter
+div_filter: True
+df_args:
+  tol: 3
+  buff: 6
+
+# finetune
+finetune_cfg:
+  batch_size: ${eval_size}
+  accum_steps: 10  # reduced from 50 (fewer timesteps per epoch)
+  epochs: 60  # increased from 3 to compensate for timestep sampling
+  sigma: 0.025
+  # --- timestep importance sampling ---
+  num_sampled_timesteps: 50  # sample 50 of 1000 timesteps per epoch
+  # --- EMA advantage normalization ---
+  ema_decay: 0.95
+  # --- adaptive KL coefficient ---
+  target_kl: 0.1
+  sigma_lr: 0.1
+  # --- residual RL ---
+  residual_alpha_init: 0.1  # start with 10% agent influence
+  residual_warmup_steps: 60  # anneal to alpha=1.0 over 60 RL steps

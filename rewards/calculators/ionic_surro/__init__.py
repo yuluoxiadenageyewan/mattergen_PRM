@@ -1,0 +1,1 @@
+from rewards.calculators.ionic_surro.calc import IonicSurroCalculator

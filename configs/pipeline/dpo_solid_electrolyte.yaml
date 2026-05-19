@@ -1,0 +1,45 @@
+_target_: pipeline.dpo_solid_electrolyte.DPOSolidElectrolyte
+
+# global
+rl_epoch: ${rl_epoch}
+device: ${device}
+
+# saving
+save_dir: ./
+save_freq: 100
+
+# sampling
+sample_cfg: ${sample_cfg}
+
+topk_ratio: 0.5
+
+# DPO-specific
+dpo_beta: 0.1  # KL constraint strength (higher = stay closer to prior)
+
+# experience replay
+replay: True
+replay_args:
+  buffer_size: 100
+  sample_size: 10
+  reward_cutoff: 0.1
+  priority_beta: 0.6
+
+# diversity filter
+div_filter: True
+df_args:
+  tol: 3
+  buff: 6
+
+# finetune
+finetune_cfg:
+  lr: 1.0e-05
+  batch_size: ${eval_size}
+  accum_steps: 10
+  epochs: 60
+  timesteps: 1000
+  num_sampled_timesteps: 50
+  ema_decay: 0.95
+  target_kl: 0.1
+  sigma_lr: 0.1
+  residual_alpha_init: 0.1
+  residual_warmup_steps: 60

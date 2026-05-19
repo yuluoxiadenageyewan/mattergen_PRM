@@ -1,0 +1,36 @@
+# Ablation: official MatInvent (no improvements)
+expname: ablation_official
+results_dir: exp_res
+device: cuda
+
+reference_path: mattergen/data-release/alex-mp/reference_MP2020correction.gz
+potential_load_path: MatterSim-v1.0.0-5M.pth
+
+rl_epoch: 120
+
+sample_cfg:
+  num_batches: 4
+  max_num: 32
+  filter:
+    _target_: pipeline.filters.opt_filter.OptFilter
+    metrics:
+      - validity
+      - novel
+      - unique
+      - stable
+    device: ${device}
+    silent: True
+    reference_path: ${reference_path}
+    potential_load_path: ${potential_load_path}
+
+eval_size: 16
+
+hydra:
+  run:
+    dir: ${results_dir}/${expname}
+
+defaults:
+  - pipeline: ablation_official
+  - model: mattergen
+  - reward: hhi
+  - logger: wandb

@@ -1,0 +1,16 @@
+# reward for ionic conductivity preference score (Li solid electrolyte)
+_target_: rewards.reward.Reward
+
+root_dir: rewards
+
+prop_cfg:
+  - name: ionic_conductivity
+    calculator:
+      _target_: rewards.calculators.ionic_surro.IonicSurroCalculator
+      root_dir: rewards/ionic_conductivity
+      task: ionic_conductivity
+    target: ascending
+    minv: 0.0
+    maxv: 1.0
+
+reward_threshold: 0.6

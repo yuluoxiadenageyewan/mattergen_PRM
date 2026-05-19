@@ -1,0 +1,259 @@
+<mxfile host="app.diagrams.net" modified="2026-03-18" agent="Claude" version="24.0.0" type="device">
+  <diagram id="matinvent-arch" name="MatInvent 强化学习架构">
+    <mxGraphModel dx="1600" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- ==================== 标题 ==================== -->
+        <mxCell id="title" value="&lt;b&gt;&lt;font style=&quot;font-size:20px&quot;&gt;MatInvent: 基于残差强化学习的晶体生成框架&lt;/font&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="240" y="15" width="690" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== RL 主循环容器 ==================== -->
+        <mxCell id="rl-loop" value="&lt;b&gt;&lt;font style=&quot;font-size:14px&quot;&gt;RL 训练主循环&lt;/font&gt;&lt;/b&gt;  (rl_epoch = 120)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;strokeWidth=3;verticalAlign=top;spacingTop=5;dashed=1;dashPattern=8 8;" vertex="1" parent="1">
+          <mxGeometry x="30" y="60" width="1110" height="750" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== PHASE 1: 采样阶段 ==================== -->
+        <mxCell id="phase1-container" value="&lt;b&gt;&lt;font style=&quot;font-size:13px&quot; color=&quot;#FFFFFF&quot;&gt;① 采样阶段 (sample_step)&lt;/font&gt;&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1a237e;strokeColor=#1a237e;fontColor=#FFFFFF;strokeWidth=2;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="50" y="100" width="520" height="230" as="geometry"/>
+        </mxCell>
+
+        <!-- Agent 模型 -->
+        <mxCell id="agent-model" value="&lt;b&gt;Agent 模型&lt;/b&gt;&lt;br&gt;(MatterGen 扩散模型)&lt;br&gt;&lt;font color=&quot;#43a047&quot;&gt;可训练 ✓&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1565c0;strokeWidth=3;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="140" width="150" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- 生成结构 -->
+        <mxCell id="gen-structures" value="&lt;b&gt;生成晶体结构&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;batch_size=64&lt;br&gt;num_batches=4&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8eaf6;strokeColor=#3949ab;strokeWidth=2;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="240" width="150" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- 过滤管线 -->
+        <mxCell id="filter-invalid" value="&lt;b&gt;无效过滤&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;SMACT / 组分 / 晶胞&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#e65100;strokeWidth=2;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="250" y="140" width="120" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="filter-comp" value="&lt;b&gt;组分约束过滤&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;必含/排除元素&lt;br&gt;例: 必含Li, 排除Sb&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#e65100;strokeWidth=2;fontSize=10;fontStyle=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="250" y="200" width="120" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="filter-opt" value="&lt;b&gt;指标过滤&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;validity / novel&lt;br&gt;unique / stable&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#e65100;strokeWidth=2;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="250" y="270" width="120" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Top-K 选择 -->
+        <mxCell id="topk" value="&lt;b&gt;Top-K 选择&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;max_num=32&lt;br&gt;topk_ratio=0.5&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8eaf6;strokeColor=#3949ab;strokeWidth=2;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="410" y="180" width="140" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- 采样阶段连线 -->
+        <mxCell id="edge-agent-gen" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#1565c0;" edge="1" source="agent-model" target="gen-structures" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge-gen-f1" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#e65100;" edge="1" source="gen-structures" target="filter-invalid" parent="1">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="230" y="275"/><mxPoint x="230" y="165"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="edge-f1-f2" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#e65100;" edge="1" source="filter-invalid" target="filter-comp" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge-f2-f3" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#e65100;" edge="1" source="filter-comp" target="filter-opt" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge-f3-topk" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#3949ab;" edge="1" source="filter-opt" target="topk" parent="1">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="400" y="295"/><mxPoint x="400" y="210"/></Array></mxGeometry>
+        </mxCell>
+
+        <!-- ==================== PHASE 2: 评分阶段 ==================== -->
+        <mxCell id="phase2-container" value="&lt;b&gt;&lt;font style=&quot;font-size:13px&quot; color=&quot;#FFFFFF&quot;&gt;② 评分阶段 (reward_step)&lt;/font&gt;&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1b5e20;strokeColor=#1b5e20;fontColor=#FFFFFF;strokeWidth=2;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="590" y="100" width="250" height="230" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="reward-calc" value="&lt;b&gt;奖励计算器&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;ALIGNN / PyMatGen&lt;br&gt;FairChem / DFT&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;strokeWidth=2;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="140" width="190" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="reward-scale" value="&lt;b&gt;线性缩放&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;reward ∈ [0, 1]&lt;br&gt;ascending / descending / target&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;strokeWidth=2;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="215" width="190" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="div-filter" value="&lt;b&gt;多样性过滤&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;tol=3, buff=6&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;strokeWidth=2;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="290" width="190" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- 评分连线 -->
+        <mxCell id="edge-topk-reward" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#2e7d32;" edge="1" source="topk" target="reward-calc" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge-rc-rs" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#2e7d32;" edge="1" source="reward-calc" target="reward-scale" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge-rs-df" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#2e7d32;" edge="1" source="reward-scale" target="div-filter" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== PHASE 3: 记忆系统 ==================== -->
+        <mxCell id="phase3-container" value="&lt;b&gt;&lt;font style=&quot;font-size:13px&quot; color=&quot;#FFFFFF&quot;&gt;③ 记忆系统&lt;/font&gt;&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#4a148c;strokeColor=#4a148c;fontColor=#FFFFFF;strokeWidth=2;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="860" y="100" width="260" height="230" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ltm" value="&lt;b&gt;长期记忆 (LTM)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;存储所有生成的晶体&lt;br&gt;计算 burden / diversity&lt;br&gt;EMA baseline 计算&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#6a1b9a;strokeWidth=2;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="880" y="140" width="220" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="replay-buf" value="&lt;b&gt;优先经验回放缓冲区&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;priority ∝ |reward - baseline|&lt;br&gt;IS 权重修正 (β=0.6)&lt;br&gt;buffer_size=100&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#6a1b9a;strokeWidth=2;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="880" y="235" width="220" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- 记忆连线 -->
+        <mxCell id="edge-div-ltm" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#6a1b9a;" edge="1" source="div-filter" target="ltm" parent="1">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="850" y="180"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="edge-div-replay" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#6a1b9a;" edge="1" source="div-filter" target="replay-buf" parent="1">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="850" y="275"/></Array></mxGeometry>
+        </mxCell>
+
+        <!-- ==================== PHASE 4: 微调阶段 ==================== -->
+        <mxCell id="phase4-container" value="&lt;b&gt;&lt;font style=&quot;font-size:13px&quot; color=&quot;#FFFFFF&quot;&gt;④ 微调阶段 (ft_step) — 残差强化学习&lt;/font&gt;&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b71c1c;strokeColor=#b71c1c;fontColor=#FFFFFF;strokeWidth=2;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="50" y="355" width="1070" height="440" as="geometry"/>
+        </mxCell>
+
+        <!-- Prior 模型 -->
+        <mxCell id="prior-model" value="&lt;b&gt;Prior 模型&lt;/b&gt;&lt;br&gt;(MatterGen 扩散模型)&lt;br&gt;&lt;font color=&quot;#c62828&quot;&gt;冻结 ✗&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#c62828;strokeWidth=3;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="400" width="150" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Agent 模型 (ft) -->
+        <mxCell id="agent-ft" value="&lt;b&gt;Agent 模型&lt;/b&gt;&lt;br&gt;(MatterGen 扩散模型)&lt;br&gt;&lt;font color=&quot;#43a047&quot;&gt;可训练 ✓&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1565c0;strokeWidth=3;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="500" width="150" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- 时间步采样 -->
+        <mxCell id="timestep-sample" value="&lt;b&gt;时间步重要性采样&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;从 T=1000 中随机采样&lt;br&gt;num_sampled_t = 50&lt;br&gt;梯度缩放: T/K = 20×&lt;br&gt;epochs: 3→60 补偿&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#c62828;strokeWidth=2;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="600" width="170" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- 加噪 -->
+        <mxCell id="add-noise" value="&lt;b&gt;加噪&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;add_noise(batch, t)&lt;br&gt;采样时间步 t&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#c62828;strokeWidth=2;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="290" y="410" width="140" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Prior 预测 -->
+        <mxCell id="prior-pred" value="&lt;b&gt;ε&lt;sub&gt;prior&lt;/sub&gt;&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;Prior 去噪预测&lt;br&gt;(pos, cell, atomic_num)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#c62828;strokeWidth=2;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="470" y="390" width="160" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Agent 预测 -->
+        <mxCell id="agent-pred" value="&lt;b&gt;ε&lt;sub&gt;agent&lt;/sub&gt;&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;Agent 去噪预测&lt;br&gt;(pos, cell, atomic_num)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1565c0;strokeWidth=2;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="470" y="470" width="160" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- 残差计算核心 -->
+        <mxCell id="residual-core" value="&lt;b&gt;&lt;font style=&quot;font-size:12px&quot;&gt;残差融合&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;ε&lt;sub&gt;eff&lt;/sub&gt; = ε&lt;sub&gt;prior&lt;/sub&gt; + α · (ε&lt;sub&gt;agent&lt;/sub&gt; - ε&lt;sub&gt;prior&lt;/sub&gt;)&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;α: 0.1 → 1.0 (线性退火)&lt;br&gt;warmup_steps = 60&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#b71c1c;strokeWidth=3;fontSize=11;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="680" y="395" width="200" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- 去噪损失 -->
+        <mxCell id="denoise-loss" value="&lt;b&gt;去噪损失&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;L&lt;sub&gt;denoise&lt;/sub&gt;(ε&lt;sub&gt;eff&lt;/sub&gt;, target)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#c62828;strokeWidth=2;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="680" y="545" width="200" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- EMA 优势归一化 -->
+        <mxCell id="ema-adv" value="&lt;b&gt;EMA 优势归一化&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;adv = (r - μ&lt;sub&gt;ema&lt;/sub&gt;) / σ&lt;sub&gt;ema&lt;/sub&gt;&lt;br&gt;clamp(adv, -5, 5)&lt;br&gt;decay = 0.95&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#f57f17;strokeWidth=2;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="290" y="545" width="170" height="75" as="geometry"/>
+        </mxCell>
+
+        <!-- KL 正则化 -->
+        <mxCell id="kl-reg" value="&lt;b&gt;KL 正则化&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;L&lt;sub&gt;KL&lt;/sub&gt; = ||ε&lt;sub&gt;agent&lt;/sub&gt; - ε&lt;sub&gt;prior&lt;/sub&gt;||² · (1.1 - r)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#f57f17;strokeWidth=2;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="290" y="645" width="250" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- 自适应 KL 系数 -->
+        <mxCell id="adaptive-sigma" value="&lt;b&gt;自适应 σ&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;σ ↑ if KL &gt; 1.5·target&lt;br&gt;σ ↓ if KL &lt; 0.5·target&lt;br&gt;target_kl = 0.1&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#f57f17;strokeWidth=2;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="290" y="720" width="170" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- 总损失 -->
+        <mxCell id="total-loss" value="&lt;b&gt;&lt;font style=&quot;font-size:13px&quot;&gt;总损失&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;L = (adv · L&lt;sub&gt;denoise&lt;/sub&gt; + σ · L&lt;sub&gt;KL&lt;/sub&gt;) · T/K&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#b71c1c;strokeWidth=3;fontSize=11;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="680" y="630" width="200" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- 梯度更新 -->
+        <mxCell id="grad-update" value="&lt;b&gt;梯度累积 + 更新&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;accum_steps=10&lt;br&gt;Adam, lr=1e-5&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#c62828;strokeWidth=2;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="680" y="735" width="200" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- ====== 微调阶段连线 ====== -->
+        <!-- Prior/Agent → 加噪 -->
+        <mxCell id="edge-prior-noise" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#c62828;" edge="1" source="prior-model" target="add-noise" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge-agent-noise" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#1565c0;" edge="1" source="agent-ft" target="add-noise" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- 加噪 → Prior/Agent 预测 -->
+        <mxCell id="edge-noise-prior" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#c62828;" edge="1" source="add-noise" target="prior-pred" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge-noise-agent" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#1565c0;" edge="1" source="add-noise" target="agent-pred" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Prior/Agent 预测 → 残差核心 -->
+        <mxCell id="edge-pp-res" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#c62828;" edge="1" source="prior-pred" target="residual-core" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge-ap-res" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#1565c0;" edge="1" source="agent-pred" target="residual-core" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- 残差 → 去噪损失 -->
+        <mxCell id="edge-res-loss" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#b71c1c;" edge="1" source="residual-core" target="denoise-loss" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- EMA + 去噪损失 → 总损失 -->
+        <mxCell id="edge-adv-total" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#f57f17;" edge="1" source="ema-adv" target="total-loss" parent="1">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="560" y="583"/><mxPoint x="560" y="670"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="edge-denoise-total" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#b71c1c;" edge="1" source="denoise-loss" target="total-loss" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge-kl-total" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#f57f17;" edge="1" source="kl-reg" target="total-loss" parent="1">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="560" y="670"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="edge-sigma-kl" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#f57f17;dashed=1;" edge="1" source="adaptive-sigma" target="kl-reg" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- 总损失 → 梯度更新 -->
+        <mxCell id="edge-total-grad" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#b71c1c;" edge="1" source="total-loss" target="grad-update" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- 梯度更新 → Agent 模型 (反馈环) -->
+        <mxCell id="edge-grad-agent" value="&lt;b&gt;更新参数&lt;/b&gt;" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#1565c0;dashed=1;dashPattern=8 4;fontStyle=1;fontSize=10;" edge="1" source="grad-update" target="agent-ft" parent="1">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="940" y="760"/><mxPoint x="940" y="770"/><mxPoint x="60" y="770"/><mxPoint x="60" y="535"/></Array></mxGeometry>
+        </mxCell>
+
+        <!-- 时间步采样 → 加噪 -->
+        <mxCell id="edge-ts-noise" value="&lt;b&gt;采样 t&lt;/b&gt;" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#c62828;fontStyle=1;fontSize=10;" edge="1" source="timestep-sample" target="add-noise" parent="1">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="270" y="640"/><mxPoint x="270" y="440"/></Array></mxGeometry>
+        </mxCell>
+
+        <!-- 回放缓冲区 → 微调 (反馈) -->
+        <mxCell id="edge-replay-ft" value="&lt;b&gt;回放样本&lt;/b&gt;" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#6a1b9a;dashed=1;dashPattern=8 4;fontStyle=1;fontSize=10;" edge="1" source="replay-buf" target="add-noise" parent="1">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="990" y="340"/><mxPoint x="360" y="340"/></Array></mxGeometry>
+        </mxCell>
+
+        <!-- Agent 预测 → KL -->
+        <mxCell id="edge-ap-kl" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;jumpStyle=arc;jumpSize=6;strokeColor=#f57f17;dashed=1;" edge="1" source="agent-pred" target="kl-reg" parent="1">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="550" y="550"/><mxPoint x="550" y="670"/></Array></mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

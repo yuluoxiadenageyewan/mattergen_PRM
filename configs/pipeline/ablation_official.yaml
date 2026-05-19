@@ -1,0 +1,44 @@
+_target_: pipeline.mat_invent.MatInvent
+
+# global
+rl_epoch: ${rl_epoch}
+device: ${device}
+
+# saving
+save_dir: ./
+save_freq: 100
+
+# sampling
+sample_cfg: ${sample_cfg}
+topk_ratio: 0.5
+
+# experience replay (no IS weights, plain replay)
+replay: True
+replay_args:
+  buffer_size: 100
+  sample_size: 10
+  reward_cutoff: 0.1
+  priority_beta: 0.0  # IS correction disabled (uniform sampling)
+
+# diversity filter
+div_filter: True
+df_args:
+  tol: 3
+  buff: 6
+
+# finetune — official MatInvent behavior
+finetune_cfg:
+  batch_size: ${eval_size}
+  accum_steps: 50
+  epochs: 3
+  sigma: 0.025          # fixed sigma, no adaptive KL
+  # NO timestep sampling
+  num_sampled_timesteps: 1000
+  # NO EMA advantage normalization (ema_decay=0 → adv uses raw reward)
+  ema_decay: 0.0
+  # NO adaptive KL
+  target_kl: 999        # unreachable → sigma never updates
+  sigma_lr: 0.0
+  # NO residual RL
+  residual_alpha_init: 1.0
+  residual_warmup_steps: 1
