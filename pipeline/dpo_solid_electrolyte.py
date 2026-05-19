@@ -29,13 +29,22 @@ class DPOSolidElectrolyte(MatInvent):
             return
 
         sort_idx = np.argsort(rewards)
-        # pair top half (winners) with bottom half (losers)
         half = n // 2
-        winner_idx = sort_idx[half:][::-1]   # highest reward first
-        loser_idx  = sort_idx[:half]          # lowest reward first
+        winner_idx = sort_idx[half:][::-1]
+        loser_idx  = sort_idx[:half]
         pair_len = min(len(winner_idx), len(loser_idx))
         winner_idx = winner_idx[:pair_len]
         loser_idx  = loser_idx[:pair_len]
+
+        # margin filter: skip pairs where reward gap is too small
+        margin = rewards.std() * 0.1
+        valid = np.abs(rewards[winner_idx] - rewards[loser_idx]) >= margin
+        winner_idx = winner_idx[valid]
+        loser_idx  = loser_idx[valid]
+        pair_len = len(winner_idx)
+        if pair_len == 0:
+            logging.warning("DPO ft_step: all pairs below margin, skipping.")
+            return
 
         data_w = [data_list[i] for i in winner_idx]
         data_l = [data_list[i] for i in loser_idx]
