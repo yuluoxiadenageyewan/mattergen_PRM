@@ -24,6 +24,7 @@ nohup python -u main.py \
     device=cuda:0 \
     reference_path=${PROJ_DIR}/mattergen/data-release/alex-mp/reference_MP2020correction.gz \
     potential_load_path=${PROJ_DIR}/MatterSim-v1.0.0-5M.pth \
+    model.model_path=${PROJ_DIR}/mattergen/checkpoints/mattergen_base \
     > exp_res/${EXPNAME}.log 2>&1 &
 
 echo "Started DPO training, PID=$!, log: exp_res/${EXPNAME}.log"
