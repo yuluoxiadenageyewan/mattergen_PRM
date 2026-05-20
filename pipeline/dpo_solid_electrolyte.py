@@ -88,6 +88,17 @@ class DPOSolidElectrolyte(MatInvent):
         logging.info('SAMPLE:')
         sample_list, sample_struc, xyz_path, sample_metrics = self.sample_step()
 
+        # retry sampling if no valid structures passed the filter
+        retry = 0
+        while len(sample_list) == 0 and retry < 3:
+            retry += 1
+            logging.warning(f'No valid samples, retrying ({retry}/3)...')
+            sample_list, sample_struc, xyz_path, sample_metrics = self.sample_step()
+
+        if len(sample_list) == 0:
+            logging.warning('No valid samples after 3 retries, skipping this RL step.')
+            return
+
         logging.info('SCORE:')
         sample_list, sample_struc, rewards, prop_dict = self.reward_step(
             sample_list, sample_struc, xyz_path, f'step_{self.step:0>4d}',

@@ -14,8 +14,9 @@ fi
 EXPNAME="dpo_solid_electrolyte"
 
 PROJ_DIR=$(pwd)
+export IONIC_SURRO_PATH=${IONIC_SURRO_PATH:-/data/root/projects/ionic_surro}
 
-nohup python -u main.py \
+python -u main.py \
     expname=${EXPNAME} \
     pipeline=dpo_solid_electrolyte \
     model=mattergen \
@@ -25,7 +26,6 @@ nohup python -u main.py \
     reference_path=${PROJ_DIR}/mattergen/data-release/alex-mp/reference_MP2020correction.gz \
     potential_load_path=${PROJ_DIR}/MatterSim-v1.0.0-5M.pth \
     model.model_path=${PROJ_DIR}/mattergen/checkpoints/mattergen_base \
-    > exp_res/${EXPNAME}.log 2>&1 &
+    +seed_path=${PROJ_DIR}/li_seeds.extxyz
 
-echo "Started DPO training, PID=$!, log: exp_res/${EXPNAME}.log"
-echo "Monitor: tail -f exp_res/${EXPNAME}.log"
+echo "Training finished."
