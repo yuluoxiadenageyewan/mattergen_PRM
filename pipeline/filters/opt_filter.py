@@ -1,5 +1,6 @@
 import io
 import contextlib
+import gzip
 import multiprocessing as mp
 from typing import List, Literal
 import numpy as np
@@ -10,7 +11,10 @@ from huggingface_hub import hf_hub_download
 import torch
 
 
-from mattergen.evaluation.reference.reference_dataset_serializer import LMDBGZSerializer
+from mattergen.evaluation.reference.reference_dataset_serializer import LMDBGZSerializer, gzip_decompress
+from mattergen.evaluation.reference.reference_dataset import ReferenceDataset
+from mattergen.evaluation.reference.reference_dataset_serializer import LMDBBackedReferenceDatasetImpl
+from mattergen.evaluation.utils.lmdb_utils import lmdb_read_metadata
 from mattergen.evaluation.metrics.evaluator import MetricsEvaluator
 from mattergen.evaluation.metrics.structure import structure_validity, is_smact_valid
 from mattergen.evaluation.utils.relaxation import relax_structures
@@ -27,14 +31,24 @@ _reference_cache = {}
 
 
 def _load_reference(path: str | None = None):
-    """Load reference dataset with caching to avoid repeated LMDB opens."""
+    """Load reference dataset with caching. Uses a fixed unpack dir to avoid LMDB conflicts."""
     if path is None:
         path = hf_hub_download(
             repo_id="jwchen25/MatInvent",
             filename="reference_MP2020correction.gz",
         )
     if path not in _reference_cache:
-        _reference_cache[path] = LMDBGZSerializer().deserialize(path)
+        import os
+        # Use a fixed directory next to the .gz file instead of a random tmpdir
+        unpack_dir = os.path.join(os.path.dirname(os.path.abspath(path)), ".lmdb_cache")
+        os.makedirs(unpack_dir, exist_ok=True)
+        lmdb_path = gzip_decompress(path, unpack_dir)
+        name = lmdb_read_metadata(lmdb_path, "name")
+        ref = ReferenceDataset(
+            name=name,
+            impl=LMDBBackedReferenceDatasetImpl(lmdb_path, cleanup_dir=False),
+        )
+        _reference_cache[path] = ref
     return _reference_cache[path]
 
 
