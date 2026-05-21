@@ -12,8 +12,8 @@ rl_epoch: 120
 
 # sampling
 sample_cfg:
-  num_batches: 4  # increased from 1 for composition-filtered sampling
-  max_num: 32  # increased from eval_size for more candidates
+  num_batches: 1
+  max_num: 64
   filter:
     _target_: pipeline.filters.opt_filter.OptFilter
     metrics:
@@ -25,6 +25,7 @@ sample_cfg:
     silent: True
     reference_path: ${reference_path}
     potential_load_path: ${potential_load_path}
+    relax_batch_size: 32
   # composition constraint filter (override per experiment)
   # comp_filter:
   #   required_elements: ["Li"]

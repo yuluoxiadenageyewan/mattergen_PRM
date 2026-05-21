@@ -37,12 +37,16 @@ def _load_reference(path: str | None = None):
             repo_id="jwchen25/MatInvent",
             filename="reference_MP2020correction.gz",
         )
+    import os
+    # normalize path so cache key is stable regardless of how it was passed
+    path = os.path.abspath(path)
     if path not in _reference_cache:
-        import os
-        # Use a fixed directory next to the .gz file instead of a random tmpdir
-        unpack_dir = os.path.join(os.path.dirname(os.path.abspath(path)), ".lmdb_cache")
+        unpack_dir = os.path.join(os.path.dirname(path), ".lmdb_cache")
         os.makedirs(unpack_dir, exist_ok=True)
-        lmdb_path = gzip_decompress(path, unpack_dir)
+        lmdb_path = os.path.join(unpack_dir, os.path.basename(path)[:-3])  # strip .gz
+        # only decompress if not already done
+        if not os.path.exists(lmdb_path):
+            gzip_decompress(path, unpack_dir)
         name = lmdb_read_metadata(lmdb_path, "name")
         ref = ReferenceDataset(
             name=name,
@@ -101,6 +105,7 @@ class OptFilter:
         reference_path: str | None = None,
         potential_load_path: str = "mattersim-v1.0.0-5M.pth",
         structure_matcher: Literal["ordered", "disordered"] = "disordered",
+        relax_batch_size: int = 32,
         **kwargs,
     ) -> None:
         assert all(m in METRIC_LIST for m in metrics)
@@ -109,6 +114,7 @@ class OptFilter:
         self.silent = silent
         self.device = get_device(device)
         self.potential_load_path = potential_load_path
+        self.relax_batch_size = relax_batch_size
         self.structure_matcher = (
             DefaultDisorderedStructureMatcher()
             if structure_matcher == "disordered"
@@ -177,9 +183,13 @@ class OptFilter:
         energies: list[float] | None = None,
     ):
         if self.relax and energies is None:
-            relaxed_structures, energies = relax_structures(
-                structures, device=self.device, potential_load_path=self.potential_load_path,
-            )
+            all_relaxed, all_energies = [], []
+            for i in range(0, len(structures), self.relax_batch_size):
+                batch = structures[i:i + self.relax_batch_size]
+                r, e = relax_structures(batch, device=self.device, potential_load_path=self.potential_load_path)
+                all_relaxed.extend(r)
+                all_energies.extend(e)
+            relaxed_structures, energies = all_relaxed, all_energies
         else:
             relaxed_structures = structures
 
@@ -233,12 +243,14 @@ class OptEval:
         reference_path: str | None = None,
         potential_load_path: str = "mattersim-v1.0.0-5M.pth",
         structure_matcher: Literal["ordered", "disordered"] = "disordered",
+        relax_batch_size: int = 32,
         **kwargs,
     ) -> None:
         self.relax = relax
         self.silent = silent
         self.device = get_device(device)
         self.potential_load_path = potential_load_path
+        self.relax_batch_size = relax_batch_size
         self.structure_matcher = (
             DefaultDisorderedStructureMatcher()
             if structure_matcher == "disordered"
@@ -302,9 +314,13 @@ class OptEval:
         energies: list[float] | None = None,
     ):
         if self.relax and energies is None:
-            relaxed_structures, energies = relax_structures(
-                structures, device=self.device, potential_load_path=self.potential_load_path,
-            )
+            all_relaxed, all_energies = [], []
+            for i in range(0, len(structures), self.relax_batch_size):
+                batch = structures[i:i + self.relax_batch_size]
+                r, e = relax_structures(batch, device=self.device, potential_load_path=self.potential_load_path)
+                all_relaxed.extend(r)
+                all_energies.extend(e)
+            relaxed_structures, energies = all_relaxed, all_energies
         else:
             relaxed_structures = structures
 

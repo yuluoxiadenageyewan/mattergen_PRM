@@ -26,6 +26,7 @@ python -u main.py \
     reference_path=${PROJ_DIR}/mattergen/data-release/alex-mp/reference_MP2020correction.gz \
     potential_load_path=${PROJ_DIR}/MatterSim-v1.0.0-5M.pth \
     model.model_path=${PROJ_DIR}/mattergen/checkpoints/mattergen_base \
+    +sample_cfg.comp_filter.required_elements='["Li"]' \
     +seed_path=${PROJ_DIR}/li_seeds.extxyz
 
 echo "Training finished."
