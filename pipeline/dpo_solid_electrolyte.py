@@ -36,11 +36,13 @@ class DPOSolidElectrolyte(MatInvent):
         dpo_beta: float = 0.1,
         loser_buffer_size: int = 50,
         seed_path: str | None = None,
+        warmup_steps: int = 0,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self.dpo_beta = dpo_beta
         self.seed_path = seed_path
+        self.warmup_steps = warmup_steps
         self.loser_replay = ReplayBuffer(
             buffer_size=loser_buffer_size,
             sample_size=self.replay.sample_size if self.replay else 5,
@@ -51,6 +53,8 @@ class DPOSolidElectrolyte(MatInvent):
     def run_rl(self):
         if self.seed_path:
             self._inject_seeds()
+            if self.warmup_steps > 0:
+                self._warmup_ft()
         super().run_rl()
 
     def _inject_seeds(self):
@@ -80,6 +84,20 @@ class DPOSolidElectrolyte(MatInvent):
                 rewards[~w],
             )
         logging.info(f'Seed injected: {w.sum()} winners, {(~w).sum()} losers')
+
+    def _warmup_ft(self):
+        logging.info(f'**** WARMUP: {self.warmup_steps} steps with seed structures ****')
+        for i in range(self.warmup_steps):
+            if len(self.replay) < 2 or len(self.loser_replay) < 2:
+                logging.warning('Warmup: not enough seed pairs, stopping early.')
+                break
+            w_data, w_rewards, _ = self.replay.sample(baseline=0.0)
+            l_data, l_rewards, _ = self.loser_replay.sample(baseline=0.0)
+            pair_n = min(len(w_data), len(l_data))
+            all_data = w_data[:pair_n] + l_data[:pair_n]
+            all_rewards = np.concatenate([w_rewards[:pair_n], l_rewards[:pair_n]])
+            self.ft_step(all_data, all_rewards, baseline=float(all_rewards.min()))
+            logging.info(f'Warmup step {i+1}/{self.warmup_steps} done')
 
     def rl_step(self):
         logging.info(f'*****   LOOP {self.step} START   *****')
