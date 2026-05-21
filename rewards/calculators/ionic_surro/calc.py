@@ -30,6 +30,9 @@ class IonicSurroCalculator(Calculator):
                 CifWriter(struc).write_file(cif_path)
                 cif_paths.append(cif_path)
 
+            if not cif_paths:
+                return np.array([], dtype=float)
+
             results = score_structures(cif_paths)
             score_map = dict(zip(results['cif_path'], results['preference_score']))
             for p in cif_paths:

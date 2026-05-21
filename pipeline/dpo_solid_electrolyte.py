@@ -72,11 +72,14 @@ class DPOSolidElectrolyte(MatInvent):
         median = np.median(rewards)
         w = rewards >= median
         if w.any() and self.replay:
+            orig_cutoff = self.replay.reward_cutoff
+            self.replay.reward_cutoff = -999
             self.replay.extend(
                 [seed_data[i] for i, v in enumerate(w) if v],
                 [strucs[i] for i, v in enumerate(w) if v],
                 rewards[w],
             )
+            self.replay.reward_cutoff = orig_cutoff
         if (~w).any():
             self.loser_replay.extend(
                 [seed_data[i] for i, v in enumerate(w) if not v],
@@ -84,6 +87,7 @@ class DPOSolidElectrolyte(MatInvent):
                 rewards[~w],
             )
         logging.info(f'Seed injected: {w.sum()} winners, {(~w).sum()} losers')
+        logging.info(f'replay size after inject: {len(self.replay)}, loser size: {len(self.loser_replay)}')
 
     def _warmup_ft(self):
         logging.info(f'**** WARMUP: {self.warmup_steps} steps with seed structures ****')

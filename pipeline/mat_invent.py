@@ -111,6 +111,9 @@ class MatInvent(ReinL):
         if self.comp_filter is not None:
             sample_data, sample_struc = self.comp_filter(sample_data, sample_struc)
 
+        if len(sample_struc) == 0:
+            return sample_data, sample_struc, None, {}
+
         # save all generated valid structures
         valid_xyz_path = save_structures(
             structures=sample_struc,
