@@ -220,6 +220,9 @@ class DPOSolidElectrolyte(MatInvent):
             logging.warning("DPO ft_step: need at least 2 samples, skipping.")
             return
 
+        # ensure all data is on CPU before collating
+        data_list = [d.cpu() if hasattr(d, 'cpu') else d for d in data_list]
+
         sort_idx = np.argsort(rewards)
         half = n // 2
         winner_idx = sort_idx[half:][::-1]
@@ -248,8 +251,8 @@ class DPOSolidElectrolyte(MatInvent):
             if hist_pair_n > 0:
                 w_perm = np.random.permutation(len(hist_w))[:hist_pair_n]
                 l_perm = np.random.permutation(len(hist_l))[:hist_pair_n]
-                data_w = data_w + [hist_w[i] for i in w_perm]
-                data_l = data_l + [hist_l[i] for i in l_perm]
+                data_w = data_w + [hist_w[i].cpu() for i in w_perm]
+                data_l = data_l + [hist_l[i].cpu() for i in l_perm]
                 pair_len = len(data_w)
                 logging.info(f'DPO: {hist_pair_n} historical pairs added, total={pair_len}')
 
